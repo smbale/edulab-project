@@ -1,0 +1,18 @@
+body {
+  padding: 0 20px;
+}
+
+div.wrapper {
+  width: 100%;
+  background: #eee;
+}
+
+div.blocks-editor {
+  margin-right: 512px;
+  height: 512px;
+}
+
+div.robot-applet {
+  float: right;
+  width: 512px;
+}
