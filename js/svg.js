@@ -1,8 +1,7 @@
 define(function() {
-  var exports = {};
 
   /* Shortcut for creating SVG elements */
-  var svgElement = function(name, attrs) {
+  var create = function(name, attrs) {
     attrs = attrs || {};
     var svgns = 'http://www.w3.org/2000/svg';
     var e = document.createElementNS(svgns, name);
@@ -17,7 +16,10 @@ define(function() {
     }
     return e;
   };
-  exports.svgElement = svgElement;
+
+  var exports = create('svg');
+  exports.svgElement = create;
+  exports.create = create;
 
   return exports;
 });

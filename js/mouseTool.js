@@ -6,7 +6,7 @@ define([], function () {
 
   /* Mouse Tool */
   var MouseTool = function(surface) {
-    var mousePressed = false, mouseOut = true;
+    var dragging = false;
     var x = 0, y = 0; // for calculating delta move
 
     // disable text select
@@ -44,35 +44,41 @@ define([], function () {
 
     // pan controls
     $(elem).mousedown(function(e) {
-      mousePressed = true;
-      x = e.clientX;
-      y = e.clientY;
-      $(this).addClass('dragging');
+      /* If left mouse key is pressed */
+      if (e.which === 1) {
+        //console.log("Surface: mousedown");
+        dragging = true;
+        x = e.clientX;
+        y = e.clientY;
+        $(this).addClass('dragging');
+      }
     });
 
+    /*
     $(elem).mouseup(function(e) {
-      mousePressed = false;
+      console.log("Surface: mouseup");
+      dragging = false;
       $(this).removeClass('dragging');
     });
+    */
 
     $(elem).mouseout(function(e) {
-      mouseOut = true;
+      dragging = false;
       $(this).removeClass('dragging');
     });
 
     $(elem).mousemove(function(e) {
-      if(!mousePressed) return false;
+      if(!dragging) return true;
       var x2 = e.clientX,
           y2 = e.clientY;
       surface.translateBy(x2 - x, y2 - y);
       x = x2;
       y = y2;
-      mouseOut = false;
       return false;
     });
 
     $(document).mouseup(function(e) {
-      mousePressed = false;
+      dragging = false;
       $(this).removeClass('dragging');
       return true;
     });
