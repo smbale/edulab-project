@@ -1,18 +1,21 @@
 define(['svg'], function(svg) {
-  var svgElement = svg.svgElement;
 
   /**
-   * Surface handles whiteboard view: panning and zooming
+   * `Surface` is a zoomable and pannable canvas for holding SVG
+   * elements.
+   * To enable user interaction (zoom and pan), use different tools
+   * (e.g. `MouseTool`).
    */
   var Surface = function() {
+    /* Keep translation and scaling information */
     this._x = 0;
     this._y = 0;
     this._scale = 1;
 
-    this.svg = svgElement('svg', {width:'100%', height:'100%'});
+    this.svg = svg.create('svg', {width:'100%', height:'100%'});
 
-    var transGroup = svgElement('g'),
-        scaleGroup = svgElement('g');
+    var transGroup = svg.create('g'),
+        scaleGroup = svg.create('g');
 
     this.canvas = scaleGroup;
     transGroup.appendChild(scaleGroup);

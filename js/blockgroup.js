@@ -1,10 +1,17 @@
 define(['svg'], function (svg) {
 
+  /* `BlockGroup` represents a group of blocks.
+   * It keeps track of the first block.
+   * Some `BlockGroup`s are global, some are inside of a
+   * block (e.g. if-block).
+   */
   var BlockGroup = function () {
     var that = this;
 
     this.wrapper = svg.create('g');
 
+    /* `this.wrapper` can be moved and these transforms
+     * are used for translation */
     this.transforms = this.wrapper.transform.baseVal;
     this.transform = svg.createSVGTransform();
 

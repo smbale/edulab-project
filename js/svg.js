@@ -17,8 +17,10 @@ define(function() {
     return e;
   };
 
+  /* Export the `svg` element which is used for creating
+   * transformations, etc.
+   */
   var exports = create('svg');
-  exports.svgElement = create;
   exports.create = create;
 
   return exports;
