@@ -17,20 +17,33 @@ function (Surface, MouseTool, Block, BlockGroup) {
 
     this.svg = this.surface.svg;
 
-    /* Just for testing: create two blocks. */
-    var b = new Block({data: 'red'}),
-        bg = new BlockGroup();
-    this.enableDragging(b);
-    bg.append(b);
-    bg.translateBy(10, 10);
-    this.surface.canvas.appendChild(bg.wrapper);
+    /* Just for testing: create a few blocks. */
+    var createBlock = function (color) {
+      var b = new Block({data: color, fill: color});
+      that.enableDragging(b);
+      return b;
+    };
 
-    b = new Block({fill: 'blue', data: 'blue'});
-    this.enableDragging(b);
-    bg = new BlockGroup();
-    bg.append(b);
-    bg.translateBy(10, 50);
-    this.surface.canvas.appendChild(bg.wrapper);
+    var createBlockGroup = function (x, y) {
+      var bg = new BlockGroup();
+      that.surface.canvas.appendChild(bg.wrapper);
+      bg.translateBy(x, y);
+      return bg;
+    };
+
+    var b1 = createBlock('red'),
+        b2 = createBlock('blue'),
+        b3 = createBlock('yellow'),
+        b4 = createBlock('green');
+
+    var bg1 = createBlockGroup(100, 100),
+        bg2 = createBlockGroup(300, 40);
+    b1.append(b2);
+    b1.append(b3);
+    bg1.appendChain(b1);
+    bg1.first.update();
+    bg2.appendChain(b4);
+    b4.append(b2);
 
     /* Enable dragging of `Block`s. */
 
