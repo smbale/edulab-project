@@ -162,7 +162,7 @@ function (Surface, MouseTool, Block, BlockGroup) {
   /* Removes `blockGroup` from global block groups. */
   BlockEditor.prototype.removeBlockGroup = function (blockGroup) {
     this.globalGroups.splice(this.globalGroups.indexOf(blockGroup), 1);
-    blockGroup.wrapper.parentElement.removeChild(blockGroup.wrapper);
+    blockGroup.wrapper.parentNode.removeChild(blockGroup.wrapper);
   };
 
   /* Checks if `block` is attachable to some block.

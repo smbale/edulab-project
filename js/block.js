@@ -67,7 +67,7 @@ define(['svg'], function (svg) {
     if (this.next) this.next.update();
     this.next = null;
     if (this.hasGroup()) {
-      this.wrapper.parentElement.removeChild(this.wrapper);
+      this.wrapper.parentNode.removeChild(this.wrapper);
       this.group = null;
     }
   };
@@ -85,7 +85,7 @@ define(['svg'], function (svg) {
     /* remove all blocks' wrappers from parent element */
     if (this.hasGroup()) {
       for (var b = this; b !== null; b = b.next) {
-        b.wrapper.parentElement.removeChild(b.wrapper);
+        b.wrapper.parentNode.removeChild(b.wrapper);
         b.group = null;
       }
     }
