@@ -23,8 +23,6 @@ define(['svg'], function (svg) {
     this.first = null;
   };
 
-
-
   /* Returns whether the group is empty. */
   BlockGroup.prototype.empty = function () {
     return this.first === null;

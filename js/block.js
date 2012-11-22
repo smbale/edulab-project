@@ -17,7 +17,8 @@ define(['svg'], function (svg) {
     this.circle = svg.create('circle', {
       cx: 50, cy: 50, r: 50, fill: opts.fill || 'red', strokeWidth: 5});
 
-    this.wrapper.appendChild(this.circle);
+    /* Create frame and append them to `this.wrapper` */
+    this.wrapper.appendChild(Block.frame.cloneNode());
 
     /* Position of the block */
     this.transforms = this.wrapper.transform.baseVal;
@@ -139,8 +140,7 @@ define(['svg'], function (svg) {
    * Recursively calls update in the chain. */
   Block.prototype.update = function () {
     if (this.prev) {
-//    console.log("update: ", this.prev.wrapper.getBBox(), this);
-      this.translate(0, 100 + this.prev._y);
+      this.translate(0, this.prev._y + this.prev.height());
     } else {
       this.translate(0, 0);
     }
@@ -162,12 +162,15 @@ define(['svg'], function (svg) {
 
   /* Returns height of the block */
   Block.prototype.height = function () {
-    return this.wrapper.getBBox().height;
+    var height = this.wrapper.getBBox().height - Block.CONNECTOR_HEIGHT;
+    return height < Block.MIN_HEIGHT ? Block.MIN_HEIGHT : height;
   };
 
   /* Returns width of the block */
-  Block.prototype.height = function () {
-    return this.wrapper.getBBox().width;
+  Block.prototype.width = function () {
+    var width = this.wrapper.getBBox().width,
+        min_width = Block.MIN_WIDTH + Block.CONNECTOR_TOTAL_WIDTH;
+    return width < min_width ? min_width : width;
   };
 
   /* Checks if `block` is attachable to this block.
@@ -199,6 +202,79 @@ define(['svg'], function (svg) {
   Block.prototype.onHoverEnd = function () {
     this.circle.style.stroke = 'none';
   }
+
+  /* Some `Block` constants which determine the visual appearance */
+  /* Connector: __/===\__ */
+  Block.CONNECTOR_WIDTH = 20;
+  Block.CONNECTOR_MARGIN = 12;
+  Block.CONNECTOR_TRANSITION_WIDTH = 5;
+  Block.CONNECTOR_TOTAL_WIDTH = Block.CONNECTOR_WIDTH + 2*Block.CONNECTOR_MARGIN
+                                + 2*Block.CONNECTOR_TRANSITION_WIDTH;
+  Block.CONNECTOR_HEIGHT = 5;
+  Block.MIN_HEIGHT = 60;
+  Block.MIN_WIDTH = 50; /* Not counting the connector width */
+
+  /* Creates visual frame and appends it to `Block` */
+  (function (Block) {
+    /*       /======\
+     *  |====        =========| <- start from here
+     *  |                     |
+     *  |    /======\         |
+     *  |====        =========| <- close path here
+     *
+     */
+    var path = svg.create('path', {
+      stroke: '#333',
+      strokeWidth: 0.5,
+      fill: '#D43'
+    });
+    var segs = path.pathSegList;
+
+    /* Starting point */
+    segs.appendItem(
+      path.createSVGPathSegMovetoAbs(
+        Block.CONNECTOR_TOTAL_WIDTH + Block.MIN_WIDTH, 0));
+
+    var relLineTo = function (x, y) {
+      return path.createSVGPathSegLinetoRel(x, y);
+    };
+
+    /* Index of the segment for the top border */
+    Block.SEG_IND_WIDTH_TOP = segs.numberOfItems;
+    segs.appendItem(relLineTo(-Block.MIN_WIDTH, 0));
+
+    segs.appendItem(relLineTo(-Block.CONNECTOR_MARGIN, 0));
+    segs.appendItem(relLineTo(-Block.CONNECTOR_TRANSITION_WIDTH, 
+                              -Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(-Block.CONNECTOR_WIDTH, 0));
+    segs.appendItem(relLineTo(-Block.CONNECTOR_TRANSITION_WIDTH,
+                              Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(-Block.CONNECTOR_MARGIN, 0));
+
+    /* Index of the segment for the left border */
+    Block.SEG_IND_HEIGHT = segs.numberOfItems;
+    segs.appendItem(relLineTo(0, Block.MIN_HEIGHT));
+
+    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN, 0));
+    segs.appendItem(relLineTo(Block.CONNECTOR_TRANSITION_WIDTH, 
+                              -Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(Block.CONNECTOR_WIDTH, 0));
+    segs.appendItem(relLineTo(Block.CONNECTOR_TRANSITION_WIDTH,
+                              Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN, 0));
+
+    /* Index of the segment for the bottom border */
+    Block.SEG_IND_WIDTH_BOTTOM = segs.numberOfItems;
+    segs.appendItem(relLineTo(Block.MIN_WIDTH, 0));
+
+    /* Close path */
+    segs.appendItem(path.createSVGPathSegClosePath());
+
+    SEGS = segs;
+
+    /* Create attribute and append to the `Block.frame` */
+    Block.frame = path;
+  })(Block);
 
   return Block;
 

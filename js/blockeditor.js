@@ -30,8 +30,10 @@ function (Surface, MouseTool, Block, BlockGroup) {
 
     b1.append(b2);
     b1.append(b3);
-    bg1.appendChain(b1);
     b3.append(b4);
+    bg1.appendChain(b1);
+    /* TODO: Even here b1.wrapper.getBBox() doesn't work! */
+    b1.update();
 
     /* Enable dragging of `Block`s. */
 
@@ -80,7 +82,7 @@ function (Surface, MouseTool, Block, BlockGroup) {
         if (!block.isFirst()) {
           /* Create a new block group which will keep the blocks */
           var x = block.group._x,
-              y = block.group._y + block.prev._y + 100,
+              y = block.group._y + block.prev._y + block.height(),
               bg = that.createBlockGroup(x, y);
           bg.appendChain(block);
         }
