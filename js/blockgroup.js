@@ -23,6 +23,9 @@ define(['svg'], function (svg) {
     this.first = null;
   };
 
+
+
+  /* Returns whether the group is empty. */
   BlockGroup.prototype.empty = function () {
     return this.first === null;
   };
@@ -36,6 +39,7 @@ define(['svg'], function (svg) {
       this.first = block;
       block.group = this;
       this.wrapper.appendChild(block.wrapper);
+      block.update();
     } else {
       var last = this.first.lastInChain();
       last.append(block);
@@ -69,6 +73,28 @@ define(['svg'], function (svg) {
     this._y = y;
     this.transform.setTranslate(this._x, this._y);
     this.transforms.initialize(this.transform);
+  };
+
+  /* Checks if `block` is attachable to some block.
+   * Returns the block to which is attachable or null. */
+  BlockGroup.prototype.attachable = function (block) {
+    var tbbox = this.wrapper.getBBox(),
+        bbbox = block.wrapper.getBBox();
+    if (svg.rectsIntersect(
+        { x: this._x,
+          y: this._y,
+          width: tbbox.width,
+          height: tbbox.height},
+        { x: block.group._x,
+          y: block.group._y,
+          width: bbbox.width,
+          height: bbbox.height})) {
+      for (var b = this.first; b !== null; b = b.next) {
+        var attachee = b.attachable(block);
+        if (attachee) return attachee;
+      }
+    }
+    return null;
   };
 
   return BlockGroup;

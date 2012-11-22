@@ -17,40 +17,29 @@ function (Surface, MouseTool, Block, BlockGroup) {
 
     this.svg = this.surface.svg;
 
+    /* List of global block groups */
+    this.globalGroups = [];
+
     /* Just for testing: create a few blocks. */
-    var createBlock = function (color) {
-      var b = new Block({data: color, fill: color});
-      that.enableDragging(b);
-      return b;
-    };
+    b1 = this.createBlock('red');
+    b2 = this.createBlock('green');
+    b3 = this.createBlock('blue');
+    b4 = this.createBlock('yellow');
 
-    var createBlockGroup = function (x, y) {
-      var bg = new BlockGroup();
-      that.surface.canvas.appendChild(bg.wrapper);
-      bg.translateBy(x, y);
-      return bg;
-    };
+    bg1 = this.createBlockGroup(100, 100),
 
-    var b1 = createBlock('red'),
-        b2 = createBlock('blue'),
-        b3 = createBlock('yellow'),
-        b4 = createBlock('green');
-
-    var bg1 = createBlockGroup(100, 100),
-        bg2 = createBlockGroup(300, 40);
     b1.append(b2);
     b1.append(b3);
     bg1.appendChain(b1);
-    bg1.first.update();
-    bg2.appendChain(b4);
-    b4.append(b2);
+    b3.append(b4);
 
     /* Enable dragging of `Block`s. */
 
     this.dragState = {
       block: null,
+      attachee: null,
       x: 0,
-      y: 0,
+      y: 0
     };
 
     /* `t` is timer id of a postponed calculation used on `mousemove` */
@@ -59,18 +48,42 @@ function (Surface, MouseTool, Block, BlockGroup) {
     $(this.surface.svg).mousemove(function (e) {
       var block = that.dragState.block;
 
-      /* if there is a block being dragged */
+      /* If there is a block being dragged */
       if (block !== null) {
 
+        /* If there is no pending timer, schedule one that whill check
+         * if the dragged block is attachable. */
         if (t === null) {
           t = setTimeout(function () {
-            /* do some calculation */
-            if (that.dragState.block !== null) {
-              //console.log("BlockGroup: mousemove", that.dragState.block);
+            var dragState = that.dragState;
+            /* If still dragging */
+            if (dragState.block !== null) {
+              /* Check if `dragState.block` is attachable */
+              var attachee = that.attachable(dragState.block);
+
+              /* If attachee is changed or there is no attachee,
+               * stop hover effect on the previous attachee */
+              if (dragState.attachee && dragState.attachee !== attachee) {
+                dragState.attachee.onHoverEnd();
+              }
+
+              /* If there is an attachee, start hover effect on it. */
+              if (attachee) attachee.onHoverStart();
+
+              dragState.attachee = attachee;
             }
             t = null;
-          }, 500);
+          }, 20);
         };
+
+        /* Detach the chain from the current group. */
+        if (!block.isFirst()) {
+          /* Create a new block group which will keep the blocks */
+          var x = block.group._x,
+              y = block.group._y + block.prev._y + 100,
+              bg = that.createBlockGroup(x, y);
+          bg.appendChain(block);
+        }
 
         var x2 = e.clientX,
             y2 = e.clientY,
@@ -88,8 +101,17 @@ function (Surface, MouseTool, Block, BlockGroup) {
     /* Stop dragging */
     $(document).mouseup(function () {
       if (that.dragState.block !== null) {
+        /* If the dragged block is dropped */
+        if (that.dragState.attachee) {
+          var temp = that.dragState.block.group;
+          that.dragState.attachee.onHoverEnd();
+          that.dragState.attachee.appendChain(that.dragState.block);
+          that.removeBlockGroup(temp);
+        }
+
         that.dragState.block.dragging = false;
         that.dragState.block = null;
+        that.dragState.attachee = null;
       }
     });
   };
@@ -116,6 +138,42 @@ function (Surface, MouseTool, Block, BlockGroup) {
         return false;
       }
     });
+  };
+
+  /* Creates new `Block`. */
+  BlockEditor.prototype.createBlock = function (color) {
+    color = color || 'red';
+    var b = new Block({data: color, fill: color});
+    this.enableDragging(b);
+    return b;
+  };
+
+   /* Creates a new global `BlockGroup` on position x, y.
+    * The group is added to global groups.
+    */
+   BlockEditor.prototype.createBlockGroup = function (x, y) {
+    var bg = new BlockGroup();
+    this.surface.canvas.appendChild(bg.wrapper);
+    bg.translateBy(x, y);
+    this.globalGroups.push(bg);
+    return bg;
+  };
+
+  /* Removes `blockGroup` from global block groups. */
+  BlockEditor.prototype.removeBlockGroup = function (blockGroup) {
+    this.globalGroups.splice(this.globalGroups.indexOf(blockGroup), 1);
+    blockGroup.wrapper.parentElement.removeChild(blockGroup.wrapper);
+  };
+
+  /* Checks if `block` is attachable to some block.
+   * Returns the block to which is attachable or null. */
+  BlockEditor.prototype.attachable = function (block) {
+    for (var i = 0, length = this.globalGroups.length; i < length; i++) {
+      var bg = this.globalGroups[i];
+      if (bg === block.group) continue;
+      var b = bg.attachable(block);
+      if (b) return b;
+    };
   };
 
   return BlockEditor;

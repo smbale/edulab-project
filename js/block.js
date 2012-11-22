@@ -14,10 +14,10 @@ define(['svg'], function (svg) {
     /* TODO: maybe not needed after all */
     this.dragging = false;
 
-    var circle = svg.create('circle', {
-      cx: 0, cy: 0, r: 50, fill: opts.fill || 'red'});
+    this.circle = svg.create('circle', {
+      cx: 50, cy: 50, r: 50, fill: opts.fill || 'red', strokeWidth: 5});
 
-    this.wrapper.appendChild(circle);
+    this.wrapper.appendChild(this.circle);
 
     /* Position of the block */
     this.transforms = this.wrapper.transform.baseVal;
@@ -139,8 +139,7 @@ define(['svg'], function (svg) {
    * Recursively calls update in the chain. */
   Block.prototype.update = function () {
     if (this.prev) {
-      /* TODO: update is not called when needed, how to get bbox?? */
-      console.log("update: ", this.prev.wrapper.getBBox(), this);
+//    console.log("update: ", this.prev.wrapper.getBBox(), this);
       this.translate(0, 100 + this.prev._y);
     } else {
       this.translate(0, 0);
@@ -170,6 +169,36 @@ define(['svg'], function (svg) {
   Block.prototype.height = function () {
     return this.wrapper.getBBox().width;
   };
+
+  /* Checks if `block` is attachable to this block.
+   * Returns the attachee to which `block` is attachable or null. */
+  Block.prototype.attachable = function (block) {
+    var tbbox = this.wrapper.getBBox(),
+        bbbox = block.wrapper.getBBox(),
+        x = this._x + this.group._x,
+        y = this._y + this.group._y;
+    if (svg.rectsIntersect(
+          {x: x, y: y, width: tbbox.width, height: tbbox.height},
+          {x: block.group._x, y: block.group._y,
+           width: bbbox.width, height: bbbox.height})) {
+      return this;
+    } else {
+      return null;
+    }
+  };
+
+  /* Changes style of the block to show that an attachable
+   * block is hovering over this one.
+   */
+  Block.prototype.onHoverStart = function () {
+    this.circle.style.stroke = 'black';
+    this.circle.style.strokeWidth = 5;
+  }
+
+  /* Reverts the effect of `onHoverStart()`. */
+  Block.prototype.onHoverEnd = function () {
+    this.circle.style.stroke = 'none';
+  }
 
   return Block;
 
