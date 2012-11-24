@@ -6,19 +6,29 @@ define(['svg'], function (svg) {
    */
   var Block = function (opts) {
     opts = opts || {};
-    this.fill = opts.fill || 'red';
 
     this.wrapper = svg.create('g', {'class': 'block'});
 
-    /* Whether block is being dragged or not */ 
-    /* TODO: maybe not needed after all */
-    this.dragging = false;
-
-    this.circle = svg.create('circle', {
-      cx: 50, cy: 50, r: 50, fill: opts.fill || 'red', strokeWidth: 5});
-
     /* Create frame and append them to `this.wrapper` */
-    this.wrapper.appendChild(Block.frame.cloneNode());
+    this.frame = Block.frame.cloneNode();
+    this.wrapper.appendChild(this.frame);
+    
+    /* Set fill of the frame */
+    this.frame.style.fill = 'hsl(60, 85%, 50%)';
+
+    this.frame.style.filter = 'url(#inner-shadow)';
+
+    /* Add text */
+    var text = svg.create('text', {
+      'x': 10,
+      'y': 43,
+      'font-family': 'sans-serif',
+      'font-size': 40,
+      'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.8)',
+      'fill': 'hsl(220, 100%, 76%)'
+    });
+    text.textContent = opts.text || 'A';
+    this.wrapper.appendChild(text);
 
     /* Position of the block */
     this.transforms = this.wrapper.transform.baseVal;
@@ -106,8 +116,7 @@ define(['svg'], function (svg) {
     block.prev = this;
     this.next = block;
     if (this.hasGroup()) {
-      // TODO: append after this!
-      this.group.wrapper.appendChild(block.wrapper);
+      this.group.wrapper.insertBefore(block.wrapper, this.wrapper);
       block.group = this.group;
       block.update();
     }
@@ -117,11 +126,13 @@ define(['svg'], function (svg) {
   Block.prototype.appendChain = function (block) {
     block.removeChain();
 
-    // first append wrappers into group's element */
+    /* First append wrappers into group's element */
     if (this.hasGroup()) {
-      for (var b = block; b !== null; b = b.next) {
-        // TODO: append after this
-        this.group.wrapper.appendChild(b.wrapper);
+      this.group.wrapper.insertBefore(block.wrapper, this.wrapper);
+      block.group = this.group;
+
+      for (var b = block.next; b !== null; b = b.next) {
+        this.group.wrapper.insertBefore(b.wrapper, b.prev.wrapper);
         b.group = this.group;
       }
     }
@@ -162,14 +173,26 @@ define(['svg'], function (svg) {
 
   /* Returns height of the block */
   Block.prototype.height = function () {
-    var height = this.wrapper.getBBox().height - Block.CONNECTOR_HEIGHT;
+    /* FireFox fails to return BBox */
+    var e;
+    try {
+      var height = this.wrapper.getBBox().height - Block.CONNECTOR_HEIGHT;
+    } catch (e) {
+      var height = 0;
+    }
     return height < Block.MIN_HEIGHT ? Block.MIN_HEIGHT : height;
   };
 
   /* Returns width of the block */
   Block.prototype.width = function () {
-    var width = this.wrapper.getBBox().width,
-        min_width = Block.MIN_WIDTH + Block.CONNECTOR_TOTAL_WIDTH;
+    var e;
+    try {
+      var width = this.wrapper.getBBox().width;
+    } catch (e) {
+      var width = 0;
+    }
+    var min_width = Block.MIN_WIDTH + Block.CONNECTOR_TOTAL_WIDTH;
+
     return width < min_width ? min_width : width;
   };
 
@@ -194,13 +217,24 @@ define(['svg'], function (svg) {
    * block is hovering over this one.
    */
   Block.prototype.onHoverStart = function () {
-    this.circle.style.stroke = 'black';
-    this.circle.style.strokeWidth = 5;
+    this.frame.style.strokeWidth = 3;
   }
 
   /* Reverts the effect of `onHoverStart()`. */
   Block.prototype.onHoverEnd = function () {
-    this.circle.style.stroke = 'none';
+    this.frame.style.strokeWidth = 0.8;
+  }
+
+  /* Changes style of the block to show that the block is
+   * being dragged.
+   */
+  Block.prototype.onDragStart = function () {
+    this.group.wrapper.style.opacity = 0.95;
+  }
+
+  /* Reverts the effect of `onDragStart()`.  */
+  Block.prototype.onDragEnd = function () {
+    this.group.wrapper.style.opacity = 1;
   }
 
   /* Some `Block` constants which determine the visual appearance */
@@ -211,6 +245,7 @@ define(['svg'], function (svg) {
   Block.CONNECTOR_TOTAL_WIDTH = Block.CONNECTOR_WIDTH + 2*Block.CONNECTOR_MARGIN
                                 + 2*Block.CONNECTOR_TRANSITION_WIDTH;
   Block.CONNECTOR_HEIGHT = 5;
+  Block.CORNER_RADIUS = 5;
   Block.MIN_HEIGHT = 60;
   Block.MIN_WIDTH = 50; /* Not counting the connector width */
 
@@ -224,24 +259,40 @@ define(['svg'], function (svg) {
      *
      */
     var path = svg.create('path', {
-      stroke: '#333',
-      strokeWidth: 0.5,
-      fill: '#D43'
+      'stroke': '#666',
+      'stroke-width': 0.8,
+      'fill': '#D43',
+      'stroke-linejoin': 'round'
     });
     var segs = path.pathSegList;
-
-    /* Starting point */
-    segs.appendItem(
-      path.createSVGPathSegMovetoAbs(
-        Block.CONNECTOR_TOTAL_WIDTH + Block.MIN_WIDTH, 0));
 
     var relLineTo = function (x, y) {
       return path.createSVGPathSegLinetoRel(x, y);
     };
 
+    var relArcTo = function (x, y) {
+      return path.createSVGPathSegArcRel(
+          x,
+          y,
+          Block.CORNER_RADIUS,
+          Block.CORNER_RADIUS,
+          90,
+          0,
+          0);
+    };
+
+    /* Starting point */
+    segs.appendItem(
+      path.createSVGPathSegMovetoAbs(
+        Block.CONNECTOR_TOTAL_WIDTH + Block.MIN_WIDTH,
+        Block.CORNER_RADIUS));
+
+    /* Add right top corner arc */
+    segs.appendItem(relArcTo(-Block.CORNER_RADIUS, -Block.CORNER_RADIUS));
+
     /* Index of the segment for the top border */
     Block.SEG_IND_WIDTH_TOP = segs.numberOfItems;
-    segs.appendItem(relLineTo(-Block.MIN_WIDTH, 0));
+    segs.appendItem(relLineTo(-Block.MIN_WIDTH + Block.CORNER_RADIUS, 0));
 
     segs.appendItem(relLineTo(-Block.CONNECTOR_MARGIN, 0));
     segs.appendItem(relLineTo(-Block.CONNECTOR_TRANSITION_WIDTH, 
@@ -249,13 +300,19 @@ define(['svg'], function (svg) {
     segs.appendItem(relLineTo(-Block.CONNECTOR_WIDTH, 0));
     segs.appendItem(relLineTo(-Block.CONNECTOR_TRANSITION_WIDTH,
                               Block.CONNECTOR_HEIGHT));
-    segs.appendItem(relLineTo(-Block.CONNECTOR_MARGIN, 0));
+    segs.appendItem(relLineTo(-Block.CONNECTOR_MARGIN + Block.CORNER_RADIUS, 0));
+
+    /* Add left top corner arc */
+    segs.appendItem(relArcTo(-Block.CORNER_RADIUS, Block.CORNER_RADIUS));
 
     /* Index of the segment for the left border */
     Block.SEG_IND_HEIGHT = segs.numberOfItems;
-    segs.appendItem(relLineTo(0, Block.MIN_HEIGHT));
+    segs.appendItem(relLineTo(0, Block.MIN_HEIGHT - 2*Block.CORNER_RADIUS));
 
-    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN, 0));
+    /* Add left bottom corner arc */
+    segs.appendItem(relArcTo(Block.CORNER_RADIUS, Block.CORNER_RADIUS));
+
+    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN - Block.CORNER_RADIUS, 0));
     segs.appendItem(relLineTo(Block.CONNECTOR_TRANSITION_WIDTH, 
                               -Block.CONNECTOR_HEIGHT));
     segs.appendItem(relLineTo(Block.CONNECTOR_WIDTH, 0));
@@ -265,7 +322,10 @@ define(['svg'], function (svg) {
 
     /* Index of the segment for the bottom border */
     Block.SEG_IND_WIDTH_BOTTOM = segs.numberOfItems;
-    segs.appendItem(relLineTo(Block.MIN_WIDTH, 0));
+    segs.appendItem(relLineTo(Block.MIN_WIDTH - Block.CORNER_RADIUS, 0));
+
+    /* Add right bottom corner arc */
+    segs.appendItem(relArcTo(Block.CORNER_RADIUS, -Block.CORNER_RADIUS));
 
     /* Close path */
     segs.appendItem(path.createSVGPathSegClosePath());

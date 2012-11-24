@@ -17,6 +17,39 @@
     <div class="blocks-editor"></div>
   </div>
 
+  <!-- Filters and gradients -->
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <defs>
+    <radialGradient id="yellow-block" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:hsl(60, 85%, 60%);"></stop>
+      <stop offset="100%" style="stop-color:hsl(60, 85%, 50%);"></stop>
+    </radialGradient>
+
+
+    <filter id='inner-shadow'>
+
+    <!-- Shadow Offset -->
+    <feOffset dx='1' dy='1' />
+
+    <!-- Shadow Blur -->
+    <feGaussianBlur stdDeviation='0' result='offset-blur' />
+
+    <!-- Invert the drop shadow to create an inner shadow -->
+    <feComposite operator='out' in='SourceGraphic' in2='offset-blur'
+                 result='inverse' />
+
+    <!-- Color & Opacity -->
+    <feFlood flood-color='white' flood-opacity='0.75' result='color'/>
+
+    <!-- Clip color inside shadow -->
+    <feComposite operator='in' in='color' in2='inverse' result='shadow'/>
+
+    <!-- Put shadow over original object -->
+    <feComposite operator='over' in='shadow' in2='SourceGraphic' />
+  </filter>
+  </defs>
+  </svg>
+
   <!-- JavaScript -->
   <script src="js/jquery-1.8.2.min.js" type="text/javascript"></script>
   <script src="robot/robot.js" type="text/javascript"></script>

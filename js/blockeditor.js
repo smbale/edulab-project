@@ -21,25 +21,35 @@ function (Surface, MouseTool, Block, BlockGroup) {
     this.globalGroups = [];
 
     /* Just for testing: create a few blocks. */
-    b1 = this.createBlock('red');
-    b2 = this.createBlock('green');
-    b3 = this.createBlock('blue');
-    b4 = this.createBlock('yellow');
+    var createChain = function (blist) {
+      for (var i = 1; i < blist.length; i++) {
+        blist[i-1].append(blist[i]);
+      }
+    };
 
-    bg1 = this.createBlockGroup(100, 100),
-
-    b1.append(b2);
-    b1.append(b3);
-    b3.append(b4);
+    b1 = this.createBlock('J');
+    b2 = this.createBlock('O');
+    b3 = this.createBlock('E');
+    createChain([b1, b2, b3]);
+    bg1 = this.createBlockGroup(50, 50),
     bg1.appendChain(b1);
-    /* TODO: Even here b1.wrapper.getBBox() doesn't work! */
-    b1.update();
+
+    b4 = this.createBlock('C');
+    b5 = this.createBlock('A');
+    b6 = this.createBlock('M');
+    b7 = this.createBlock('E');
+    b8 = this.createBlock('L');
+    createChain([b4, b5, b6, b7, b8]);
+    bg2 = this.createBlockGroup(200, 50),
+    bg2.appendChain(b4);
+
 
     /* Enable dragging of `Block`s. */
 
     this.dragState = {
       block: null,
       attachee: null,
+      firstMovement: false,
       x: 0,
       y: 0
     };
@@ -86,6 +96,12 @@ function (Surface, MouseTool, Block, BlockGroup) {
               bg = that.createBlockGroup(x, y);
           bg.appendChain(block);
         }
+        
+        if (that.dragState.firstMovement) {
+
+          block.onDragStart();
+          that.dragState.firstMovement = false;
+        }
 
         var x2 = e.clientX,
             y2 = e.clientY,
@@ -103,6 +119,8 @@ function (Surface, MouseTool, Block, BlockGroup) {
     /* Stop dragging */
     $(document).mouseup(function () {
       if (that.dragState.block !== null) {
+        that.dragState.block.onDragEnd();
+
         /* If the dragged block is dropped */
         if (that.dragState.attachee) {
           var temp = that.dragState.block.group;
@@ -111,9 +129,9 @@ function (Surface, MouseTool, Block, BlockGroup) {
           that.removeBlockGroup(temp);
         }
 
-        that.dragState.block.dragging = false;
         that.dragState.block = null;
         that.dragState.attachee = null;
+        that.dragState.firstMovement = false;
       }
     });
   };
@@ -125,11 +143,12 @@ function (Surface, MouseTool, Block, BlockGroup) {
     $(block.wrapper).mousedown(function (e) {
       /* If left mouse key is pressed */
       if (e.which === 1) {
-        //console.log("BlockGroup: mousedown", block);
-        block.dragging = true;
         that.dragState.x = e.clientX;
         that.dragState.y = e.clientY;
         that.dragState.block = block;
+
+        /* Helps us discover the first movement after mouse down. */
+        that.dragState.firstMovement = true;
 
         /* If block.group is global, move it to the foreground */
         var canvas = that.surface.canvas;
@@ -143,9 +162,8 @@ function (Surface, MouseTool, Block, BlockGroup) {
   };
 
   /* Creates new `Block`. */
-  BlockEditor.prototype.createBlock = function (color) {
-    color = color || 'red';
-    var b = new Block({data: color, fill: color});
+  BlockEditor.prototype.createBlock = function (text) {
+    var b = new Block({text: text});
     this.enableDragging(b);
     return b;
   };
