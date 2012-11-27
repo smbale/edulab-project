@@ -4,7 +4,7 @@ body {
 
 div.wrapper {
   width: 100%;
-  background: #eee;
+  background: hsl(80, 37%, 97%);
 }
 
 div.blocks-editor {
@@ -15,4 +15,8 @@ div.blocks-editor {
 div.robot-applet {
   float: right;
   width: 512px;
+}
+
+.dragging {
+  cursor: -webkit-grabbing;
 }

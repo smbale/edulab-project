@@ -39,7 +39,8 @@ function (Surface, MouseTool, Block, BlockGroup) {
     b6 = this.createBlock('M');
     b7 = this.createBlock('E');
     b8 = this.createBlock('L');
-    createChain([b4, b5, b6, b7, b8]);
+    b9 = this.createBlock();
+    createChain([b4, b5, b6, b7, b8, b9]);
     bg2 = this.createBlockGroup(200, 50),
     bg2.appendChain(b4);
 
@@ -132,6 +133,9 @@ function (Surface, MouseTool, Block, BlockGroup) {
         that.dragState.block = null;
         that.dragState.attachee = null;
         that.dragState.firstMovement = false;
+
+        /* Remove "dragging" class from SVG TODO */
+        that.svg.style.cursor = 'default';
       }
     });
   };
@@ -147,7 +151,10 @@ function (Surface, MouseTool, Block, BlockGroup) {
         that.dragState.y = e.clientY;
         that.dragState.block = block;
 
-        /* Helps us discover the first movement after mouse down. */
+        /* Add "dragging" class to SVG TODO */
+        that.svg.style.cursor = '-webkit-grabbing';
+
+        /* Helps discover the first movement after mouse down. */
         that.dragState.firstMovement = true;
 
         /* If block.group is global, move it to the foreground */

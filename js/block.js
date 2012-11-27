@@ -19,16 +19,23 @@ define(['svg'], function (svg) {
     this.frame.style.filter = 'url(#inner-shadow)';
 
     /* Add text */
-    var text = svg.create('text', {
-      'x': 10,
-      'y': 43,
-      'font-family': 'sans-serif',
-      'font-size': 40,
-      'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.8)',
-      'fill': 'hsl(220, 100%, 76%)'
-    });
-    text.textContent = opts.text || 'A';
-    this.wrapper.appendChild(text);
+    if (opts.text) {
+      var text = svg.create('text', {
+        'x': 10,
+        'y': 43,
+        'font-family': 'sans-serif',
+        'font-size': 40,
+        'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.8)',
+        'fill': 'hsl(220, 100%, 76%)'
+      });
+      text.textContent = opts.text;
+      this.wrapper.appendChild(text);
+    } else {
+      this.wrapper.appendChild(svg.create('use', {
+        'x': 6,
+        'y': 7,
+        'xlink:href': '#loop-icon'}));
+    }
 
     /* Position of the block */
     this.transforms = this.wrapper.transform.baseVal;
