@@ -20,14 +20,7 @@
   <!-- Filters, gradients and icons -->
   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="0" height="0">
   <defs>
-    <radialGradient id="yellow-block"
-        cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-      <stop offset="0%" style="stop-color:hsl(60, 85%, 60%);"></stop>
-      <stop offset="100%" style="stop-color:hsl(60, 85%, 50%);"></stop>
-    </radialGradient>
-
     <filter id='inner-shadow'>
-
       <!-- Shadow Offset -->
       <feOffset dx='1' dy='1' />
 
@@ -48,6 +41,16 @@
       <feComposite operator='over' in='shadow' in2='SourceGraphic' />
     </filter>
 
+    <filter id = "simple-shadow" width = "150%" height = "150%">
+      <feOffset result = "offOut" in = "SourceAlpha" dx = "1" dy = "1"/>
+      <feColorMatrix in = "offOut" type = "matrix" result = "shadow"
+                     values="1 0 0 0 0
+                             0 1 0 0 0 
+                             0 0 1 0 0 
+                             0 0 0 0.5 0"/>
+      <feBlend in = "SourceGraphic" in2 = "shadow" mode = "normal"/>
+    </filter>
+
     <path id="loop-icon"
       transform = "scale(1.4,1.4)"
       d="M19.275,3.849l1.695,8.56l1.875-1.642c2.311,3.59,1.72,8.415-1.584,
@@ -57,7 +60,8 @@
       5.186-2.572,7.875-1.909l0.842-3.398c-3.752-0.93-7.893-0.067-11.022,
       2.672c-4.765,4.174-5.519,11.223-1.939,16.283l-2.026,1.772l8.26,
       2.812l-1.693-8.559L8.154,20.232z"
-      fill="white"></path>
+      fill="white"
+      filter="url(#simple-shadow)"></path>
 
     <path id="play-icon"
       transform = "scale(1.4,1.4)"

@@ -26,16 +26,22 @@ g.blockGroup.dragging {
   opacity: 0.92;
 }
 
+path.connector {
+  stroke-width: 5px;
+  stroke: hsl(9, 77%, 54%);
+  fill: none;
+}
+
 g.block path.frame {
   filter: url(#inner-shadow);
-  stroke: #666;
+  stroke: rgba(0, 0, 0, 0.3);
   stroke-width: 0.8px;
 }
 
 g.statement-block path.frame {
-  fill: hsl(41, 80%, 52%);
+  fill: hsl(197, 72%, 52%);
 }
 
 g.control-block path.frame {
-  fill: hsl(225, 62%, 56%);
+  fill: hsl(82, 72%, 52%);
 }

@@ -17,8 +17,13 @@ define(function() {
     return e;
   };
 
+  /* Export the `svg` element which is used for creating
+   * transformations, etc. */
+  var svg = create('svg');
+  svg.create = create;
+
   /* Checks if two rectangles intersect. */
-  var rectsIntersect = function (a, b) {
+  svg.rectsIntersect = function (a, b) {
     /* x, y are 'centers' of rectangles,
      * w, h are 'radii' of rectangles.
      */
@@ -30,7 +35,7 @@ define(function() {
   };
 
   /* Checks if an SVG element `e` has a class `name` */
-  var hasClass = function (e, name) {
+  svg.hasClass = function (e, name) {
     if (e.classList) {
       return e.classList.contains(name);
     } else {
@@ -39,19 +44,19 @@ define(function() {
   };
 
   /* Adds a class to an SVG element. */
-  var addClass = function addClass(e, name) {
+  svg.addClass = function addClass(e, name) {
     if (e.classList) {
       e.classList.add(name);
-    } else if (!hasClass(e, name)) {
+    } else if (!svg.hasClass(e, name)) {
       e.className.baseVal += (e.className.baseVal ? ' ' : '') + name;
     }
   };
 
   /* Removes a class from an SVG element. */
-  var removeClass = function (e, name) {
+  svg.removeClass = function (e, name) {
     if (e.classList) {
       e.classList.remove(name);
-    } else if (hasClass(e, name)) {
+    } else if (svg.hasClass(e, name)) {
       e.className.baseVal = 
         e.className.baseVal
                    .replace(new RegExp('(\\s|^)' + name + '(\\s|$)'), ' ')
@@ -59,15 +64,11 @@ define(function() {
     }
   };
 
-  /* Export the `svg` element which is used for creating
-   * transformations, etc.
-   */
-  var exports = create('svg');
-  exports.create = create;
-  exports.rectsIntersect = rectsIntersect;
-  exports.addClass = addClass;
-  exports.removeClass = removeClass;
-  exports.hasClass = hasClass;
+  svg.setTranslate = function (e, x, y) {
+    var trans = svg.createSVGTransform();
+    trans.setTranslate(x, y);
+    e.transform.baseVal.initialize(trans);
+  };
 
-  return exports;
+  return svg;
 });

@@ -20,7 +20,7 @@ define(['svg', 'connector'], function (svg, Connector) {
         'y': 43,
         'font-family': 'sans-serif',
         'font-size': 40,
-        'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.5)',
+        'filter': 'url(#simple-shadow)',
         'fill': 'white'
       });
       text.textContent = opts.text;
@@ -48,6 +48,12 @@ define(['svg', 'connector'], function (svg, Connector) {
     /* Connectors */
     this.connectors = [];
     this.connectors.push(new Connector(this, 0));
+
+    this.connectorPaths = [];
+    var cpath = Block.connector.cloneNode();
+    this.connectorPaths.push(cpath);
+    cpath.style.display = 'none';
+    this.wrapper.appendChild(cpath);
   };
 
   /* Check if the block belongs to some group. */
@@ -166,7 +172,10 @@ define(['svg', 'connector'], function (svg, Connector) {
     } else {
       this.translate(0, 0);
     }
-    
+
+    /* Update connector */
+    svg.setTranslate(this.connectorPaths[0], 0, this.size().height);
+
     if (this.next) {
       this.next.update();
     } else {
@@ -263,12 +272,12 @@ define(['svg', 'connector'], function (svg, Connector) {
    * block is hovering over this one.
    */
   Block.prototype.onHoverStart = function () {
-    this.frame.style.strokeWidth = 3;
+    this.connectorPaths[0].style.display = 'block';
   }
 
   /* Reverts the effect of `onHoverStart()`. */
   Block.prototype.onHoverEnd = function () {
-    this.frame.style.strokeWidth = 0.8;
+    this.connectorPaths[0].style.display = 'none';
   }
 
   /* Changes style of the block to show that an attachable
@@ -381,10 +390,30 @@ define(['svg', 'connector'], function (svg, Connector) {
     /* Close path */
     segs.appendItem(path.createSVGPathSegClosePath());
 
-    SEGS = segs;
-
     /* Create attribute and append to `Block.frame` */
     Block.frame = path;
+
+
+    /* Create connector path (only half margin) */
+    var connectorPath = svg.create('path', {
+      'class': 'connector'
+    });
+    segs = connectorPath.pathSegList;
+
+    segs.appendItem(path.createSVGPathSegMovetoAbs(0, 0));
+
+    segs.appendItem(
+        path.createSVGPathSegMovetoRel(Block.CONNECTOR_MARGIN / 2 , 0));
+    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN / 2, 0));
+    segs.appendItem(relLineTo(Block.CONNECTOR_TRANSITION_WIDTH,
+                              -Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(Block.CONNECTOR_WIDTH, 0));
+    segs.appendItem(relLineTo(Block.CONNECTOR_TRANSITION_WIDTH,
+                              Block.CONNECTOR_HEIGHT));
+    segs.appendItem(relLineTo(Block.CONNECTOR_MARGIN / 2, 0));
+
+    Block.connector = connectorPath;
+
   })(Block);
 
   return Block;
