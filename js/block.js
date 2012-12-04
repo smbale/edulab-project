@@ -1,4 +1,4 @@
-define(['svg'], function (svg) {
+define(['svg', 'connector'], function (svg, Connector) {
 
   /* `Block` represents one statement or an expression.
    * `Block` keeps track of the group it belongs to and previous/next
@@ -7,16 +7,11 @@ define(['svg'], function (svg) {
   var Block = function (opts) {
     opts = opts || {};
 
-    this.wrapper = svg.create('g', {'class': 'block'});
+    this.wrapper = svg.create('g', {'class': 'block statement-block'});
 
     /* Create frame and append them to `this.wrapper` */
     this.frame = Block.frame.cloneNode();
     this.wrapper.appendChild(this.frame);
-    
-    /* Set fill of the frame */
-    this.frame.style.fill = 'hsl(60, 85%, 50%)';
-
-    this.frame.style.filter = 'url(#inner-shadow)';
 
     /* Add text */
     if (opts.text) {
@@ -25,8 +20,8 @@ define(['svg'], function (svg) {
         'y': 43,
         'font-family': 'sans-serif',
         'font-size': 40,
-        'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.8)',
-        'fill': 'hsl(220, 100%, 76%)'
+        'style': '-webkit-svg-shadow: 1px 1px rgba(0,0,0,0.5)',
+        'fill': 'white'
       });
       text.textContent = opts.text;
       this.wrapper.appendChild(text);
@@ -49,6 +44,10 @@ define(['svg'], function (svg) {
     /* previous and next elements in a group */
     this.prev = null;
     this.next = null;
+
+    /* Connectors */
+    this.connectors = [];
+    this.connectors.push(new Connector(this, 0));
   };
 
   /* Check if the block belongs to some group. */
@@ -60,6 +59,12 @@ define(['svg'], function (svg) {
    * Returns false if it doesn't have a group. */
   Block.prototype.isFirst = function () {
     return this.hasGroup() ? this.group.first === this : false;
+  };
+
+  /* Checks if the block is the last in his group.
+   * Returns false if it doesn't have a group. */
+  Block.prototype.isLast = function () {
+    return this.hasGroup() ? this.next === null : false;
   };
 
   /* Returns the last block in chain. */
@@ -110,8 +115,7 @@ define(['svg'], function (svg) {
   };
 
   /* Appends `block` after this block.
-   * It calls `remove()` on `block,
-   * updates `block`'s group,
+   * It calls `remove()` on `block, updates `block`'s group,
    * and moves `block.wrapper` element. */
   Block.prototype.append = function (block) {
     block.remove();
@@ -158,11 +162,24 @@ define(['svg'], function (svg) {
    * Recursively calls update in the chain. */
   Block.prototype.update = function () {
     if (this.prev) {
-      this.translate(0, this.prev._y + this.prev.height());
+      this.translate(0, this.prev._y + this.prev.size().height);
     } else {
       this.translate(0, 0);
     }
-    return this.next ? this.next.update() : null;
+    
+    if (this.next) {
+      this.next.update();
+    } else {
+      /* If this is the last block in the chain, call update on parent */
+      if (this.hasGroup()) this.group.update();
+    }
+  };
+
+  /* Connects `block`'s chain to the connector with index `index` */
+  Block.prototype.connect = function (block, index) {
+    if (index === 0) {
+      this.appendChain(block);
+    }
   };
 
   /* Translates `wrapper` by `x`, `y`. */
@@ -178,46 +195,68 @@ define(['svg'], function (svg) {
     this.transforms.initialize(this.transform);
   };
 
-  /* Returns height of the block */
-  Block.prototype.height = function () {
-    /* FireFox fails to return BBox */
-    var e;
+  /* Returns size of the block {width, height} */
+  Block.prototype.size = function () {
+    /* FireFox fails to return BBox if element is not attached to DOM */
+    var e, height, width;
     try {
-      var height = this.wrapper.getBBox().height - Block.CONNECTOR_HEIGHT;
+      var bbox = this.wrapper.getBBox();
+      height = bbox.height - Block.CONNECTOR_HEIGHT;
+      width = bbox.width;
     } catch (e) {
-      var height = 0;
-    }
-    return height < Block.MIN_HEIGHT ? Block.MIN_HEIGHT : height;
-  };
-
-  /* Returns width of the block */
-  Block.prototype.width = function () {
-    var e;
-    try {
-      var width = this.wrapper.getBBox().width;
-    } catch (e) {
-      var width = 0;
+      height = 0;
+      width = 0;
     }
     var min_width = Block.MIN_WIDTH + Block.CONNECTOR_TOTAL_WIDTH;
+    return {
+      height: height < Block.MIN_HEIGHT ? Block.MIN_HEIGHT : height,
+      width : width  < min_width        ? min_width        : width
+    };
+  };
 
-    return width < min_width ? min_width : width;
+  /* Return global position of the block */
+  Block.prototype.globalPosition = function () {
+    var groupPosition = this.group.globalPosition();
+    return {
+      x: this._x + groupPosition.x,
+      y: this._y + groupPosition.y
+    };
+  };
+
+  /* Returns rectangle {x, y, width, height} with global coordinates
+   * for the connector with index `index` or 
+   * connecting connecotr if `index` is not given.
+   */
+  Block.prototype.connectorArea = function (index) {
+    var position = this.globalPosition();
+    if (typeof(index) !== 'undefined') {
+      /* Return the connector's area to which others connect */
+      var size = this.size();
+      return {
+        x: position.x,
+        y: position.y + size.height - Block.CONNECTOR_HEIGHT - 5,
+        width: Block.CONNECTOR_TOTAL_WIDTH,
+        height: Block.CONNECTOR_HEIGHT + 10
+      };
+    } else {
+      /* Return the connector's area with which this one connects */
+      return {
+        x: position.x,
+        y: position.y - Block.CONNECTOR_HEIGHT - 5, /* 5px above connector */
+        width: Block.CONNECTOR_TOTAL_WIDTH,
+        height: Block.CONNECTOR_HEIGHT + 10         /* 5px below connector */
+      };
+    }
   };
 
   /* Checks if `block` is attachable to this block.
-   * Returns the attachee to which `block` is attachable or null. */
+   * Returns the connector to which `block` is attachable or null. */
   Block.prototype.attachable = function (block) {
-    var tbbox = this.wrapper.getBBox(),
-        bbbox = block.wrapper.getBBox(),
-        x = this._x + this.group._x,
-        y = this._y + this.group._y;
-    if (svg.rectsIntersect(
-          {x: x, y: y, width: tbbox.width, height: tbbox.height},
-          {x: block.group._x, y: block.group._y,
-           width: bbbox.width, height: bbbox.height})) {
-      return this;
-    } else {
-      return null;
+    for (var i = 0, length = this.connectors.length; i < length; i++) {
+      var c = this.connectors[i].attachable(block);
+      if (c) return c;
     }
+    return null;
   };
 
   /* Changes style of the block to show that an attachable
@@ -230,6 +269,13 @@ define(['svg'], function (svg) {
   /* Reverts the effect of `onHoverStart()`. */
   Block.prototype.onHoverEnd = function () {
     this.frame.style.strokeWidth = 0.8;
+  }
+
+  /* Changes style of the block to show that an attachable
+   * block is hovering over this one.
+   */
+  Block.prototype.onConnect = function (index) {
+    // pass
   }
 
   /* Changes style of the block to show that the block is
@@ -266,10 +312,8 @@ define(['svg'], function (svg) {
      *
      */
     var path = svg.create('path', {
-      'stroke': '#666',
-      'stroke-width': 0.8,
-      'fill': '#D43',
-      'stroke-linejoin': 'round'
+      'stroke-linejoin': 'round',
+      'class': 'frame'
     });
     var segs = path.pathSegList;
 
@@ -339,7 +383,7 @@ define(['svg'], function (svg) {
 
     SEGS = segs;
 
-    /* Create attribute and append to the `Block.frame` */
+    /* Create attribute and append to `Block.frame` */
     Block.frame = path;
   })(Block);
 

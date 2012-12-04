@@ -93,7 +93,8 @@ function (Surface, MouseTool, Block, BlockGroup) {
         if (!block.isFirst()) {
           /* Create a new block group which will keep the blocks */
           var x = block.group._x,
-              y = block.group._y + block.prev._y + block.height(),
+              blockSize = block.size(),
+              y = block.group._y + block.prev._y + blockSize.height,
               bg = that.createBlockGroup(x, y);
           bg.appendChain(block);
         }
@@ -178,7 +179,7 @@ function (Surface, MouseTool, Block, BlockGroup) {
    /* Creates a new global `BlockGroup` on position x, y.
     * The group is added to global groups.
     */
-   BlockEditor.prototype.createBlockGroup = function (x, y) {
+  BlockEditor.prototype.createBlockGroup = function (x, y) {
     var bg = new BlockGroup();
     this.surface.canvas.appendChild(bg.wrapper);
     bg.translateBy(x, y);

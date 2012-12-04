@@ -17,6 +17,21 @@ div.robot-applet {
   width: 512px;
 }
 
+/* Blocks' styles */
 .dragging {
   cursor: -webkit-grabbing;
+}
+
+g.block path.frame {
+  filter: url(#inner-shadow);
+  stroke: #666;
+  stroke-width: 0.8px;
+}
+
+g.statement-block path.frame {
+  fill: hsl(41, 80%, 52%);
+}
+
+g.control-block path.frame {
+  fill: hsl(225, 62%, 56%);
 }

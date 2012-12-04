@@ -15,12 +15,15 @@ define(['svg'], function (svg) {
     this.transforms = this.wrapper.transform.baseVal;
     this.transform = svg.createSVGTransform();
 
-    /* position of the block group */
+    /* Position of the block group */
     this._x = 0;
     this._y = 0;
 
-    /* set reference for the first block to `null` */
+    /* Set reference for the first block to `null` */
     this.first = null;
+
+    /* Parent block of the group, `null` if global */
+    this.parentBlock = null;
   };
 
   /* Returns whether the group is empty. */
@@ -76,23 +79,46 @@ define(['svg'], function (svg) {
   /* Checks if `block` is attachable to some block.
    * Returns the block to which is attachable or null. */
   BlockGroup.prototype.attachable = function (block) {
-    var tbbox = this.wrapper.getBBox(),
-        bbbox = block.wrapper.getBBox();
-    if (svg.rectsIntersect(
-        { x: this._x,
-          y: this._y,
-          width: tbbox.width,
-          height: tbbox.height},
-        { x: block.group._x,
-          y: block.group._y,
-          width: bbbox.width,
-          height: bbbox.height})) {
+    var pos = this.globalPosition(),
+        size = this.size(),
+        area = {x: pos.x, y: pos.y, width: size.width, height: size.height};
+    if (svg.rectsIntersect(area, block.connectorArea())){
       for (var b = this.first; b !== null; b = b.next) {
         var attachee = b.attachable(block);
         if (attachee) return attachee;
       }
     }
     return null;
+  };
+
+  /* Returns the global position of the group. */
+  BlockGroup.prototype.globalPosition = function () {
+    if (this.parentBlock) {
+      var parentPosition = this.parentBlock.globalPosition();
+      return {x: this._x + parentPosition.x, y: this._y + parentPosition.y};
+    } else {
+      return {x: this._x, y: this._y};
+    }
+  };
+
+  /* Returns the size of the group {width, height} */
+  BlockGroup.prototype.size = function () {
+    /* FireFox fails to return BBox if element is not attached to DOM */
+    var e, height, width;
+    try {
+      var bbox = this.wrapper.getBBox();
+      height = bbox.height;
+      width = bbox.width;
+    } catch (e) {
+      height = 0;
+      width = 0;
+    }
+    return {width: width, height: height};
+  };
+
+  /* Delegates update to the parent block */
+  BlockGroup.prototype.update = function () {
+    if (this.parentBlock) this.parentBlock.update();
   };
 
   return BlockGroup;
