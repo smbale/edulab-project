@@ -30,6 +30,7 @@ function (svg) {
   Connector.prototype.attachable = function (block) {
     var area1 = block.connectorArea(),
         area2 = this.block.connectorArea(this.index);
+    if (area2 === null) return null;
     return svg.rectsIntersect(area1, area2) ? this : null;
   };
 

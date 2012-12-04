@@ -7,7 +7,9 @@ define(['svg', 'connector'], function (svg, Connector) {
   var Block = function (opts) {
     opts = opts || {};
 
-    this.wrapper = svg.create('g', {'class': 'block statement-block'});
+    this.initMembers();
+
+    svg.addClass(this.wrapper, "statement-block");
 
     /* Create frame and append them to `this.wrapper` */
     this.frame = Block.frame.cloneNode();
@@ -32,6 +34,17 @@ define(['svg', 'connector'], function (svg, Connector) {
         'xlink:href': '#loop-icon'}));
     }
 
+    this.connectors.push(new Connector(this, 0));
+
+    var cpath = Block.connector.cloneNode();
+    this.connectorPaths.push(cpath);
+    cpath.style.display = 'none';
+    this.wrapper.appendChild(cpath);
+  };
+
+  Block.prototype.initMembers = function () {
+    this.wrapper = svg.create('g', {'class': 'block'});
+
     /* Position of the block */
     this.transforms = this.wrapper.transform.baseVal;
     this.transform = svg.createSVGTransform();
@@ -47,13 +60,7 @@ define(['svg', 'connector'], function (svg, Connector) {
 
     /* Connectors */
     this.connectors = [];
-    this.connectors.push(new Connector(this, 0));
-
     this.connectorPaths = [];
-    var cpath = Block.connector.cloneNode();
-    this.connectorPaths.push(cpath);
-    cpath.style.display = 'none';
-    this.wrapper.appendChild(cpath);
   };
 
   /* Check if the block belongs to some group. */
@@ -164,17 +171,10 @@ define(['svg', 'connector'], function (svg, Connector) {
     if (this.hasGroup()) block.update();
   };
 
-  /* Updates position and size.
-   * Recursively calls update in the chain. */
+  /* Recursively calls update in the chain. */
   Block.prototype.update = function () {
-    if (this.prev) {
-      this.translate(0, this.prev._y + this.prev.size().height);
-    } else {
-      this.translate(0, 0);
-    }
-
-    /* Update connector */
-    svg.setTranslate(this.connectorPaths[0], 0, this.size().height);
+    this.updatePosition();
+    this.updateSize();
 
     if (this.next) {
       this.next.update();
@@ -182,6 +182,21 @@ define(['svg', 'connector'], function (svg, Connector) {
       /* If this is the last block in the chain, call update on parent */
       if (this.hasGroup()) this.group.update();
     }
+  };
+
+  /* Updates the position of the block. */
+  Block.prototype.updatePosition = function () {
+    if (this.prev) {
+      this.translate(0, this.prev._y + this.prev.size().height);
+    } else {
+      this.translate(0, 0);
+    }
+  };
+
+  /* Updates the size (frame, connectors) of the block. */
+  Block.prototype.updateSize = function () {
+    /* Update connector */
+    svg.setTranslate(this.connectorPaths[0], 0, this.size().height);
   };
 
   /* Connects `block`'s chain to the connector with index `index` */

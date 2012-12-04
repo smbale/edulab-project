@@ -81,8 +81,10 @@ define(['svg'], function (svg) {
   BlockGroup.prototype.attachable = function (block) {
     var pos = this.globalPosition(),
         size = this.size(),
-        area = {x: pos.x, y: pos.y, width: size.width, height: size.height};
-    if (svg.rectsIntersect(area, block.connectorArea())){
+        area = {x: pos.x, y: pos.y, width: size.width, height: size.height},
+        connectorArea = block.connectorArea();
+    if (connectorArea === null) return null;
+    if (svg.rectsIntersect(area, connectorArea)){
       for (var b = this.first; b !== null; b = b.next) {
         var attachee = b.attachable(block);
         if (attachee) return attachee;

@@ -1,5 +1,5 @@
-define(['svg', 'surface', 'mouseTool', 'block', 'blockgroup'],
-function (svg, Surface, MouseTool, Block, BlockGroup) {
+define(['svg', 'surface', 'mouseTool', 'block', 'startblock', 'blockgroup'],
+function (svg, Surface, MouseTool, Block, StartBlock, BlockGroup) {
 
   /* **BlockEditor** represents the block editor.
    * It uses `Surface`, which is zoomable and pannable, to place `Block`s.
@@ -27,11 +27,19 @@ function (svg, Surface, MouseTool, Block, BlockGroup) {
       }
     };
 
+    startBlock = new StartBlock({
+      onrun: function () {
+        if (console) console.log("RUN");
+    }});
+    this.enableDragging(startBlock);
+    startbg = this.createBlockGroup(30, 40);
+    startbg.append(startBlock);
+
     b1 = this.createBlock('J');
     b2 = this.createBlock('O');
     b3 = this.createBlock('E');
     createChain([b1, b2, b3]);
-    bg1 = this.createBlockGroup(50, 50),
+    bg1 = this.createBlockGroup(50, 140),
     bg1.appendChain(b1);
 
     b4 = this.createBlock('C');
@@ -46,7 +54,6 @@ function (svg, Surface, MouseTool, Block, BlockGroup) {
 
 
     /* Enable dragging of `Block`s. */
-
     this.dragState = {
       block: null,
       attachee: null,

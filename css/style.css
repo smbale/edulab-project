@@ -42,6 +42,15 @@ g.statement-block path.frame {
   fill: hsl(197, 72%, 52%);
 }
 
+g.start-block path.frame {
+  fill: hsl(62, 71%, 58%);
+}
+
 g.control-block path.frame {
   fill: hsl(82, 72%, 52%);
+}
+
+path#play-icon {
+  fill: green;
+  cursor: pointer;
 }
