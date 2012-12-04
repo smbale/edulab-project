@@ -18,8 +18,12 @@ div.robot-applet {
 }
 
 /* Blocks' styles */
-.dragging {
+svg.dragging {
   cursor: -webkit-grabbing;
+}
+
+g.blockGroup.dragging {
+  opacity: 0.92;
 }
 
 g.block path.frame {

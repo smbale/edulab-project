@@ -282,12 +282,12 @@ define(['svg', 'connector'], function (svg, Connector) {
    * being dragged.
    */
   Block.prototype.onDragStart = function () {
-    this.group.wrapper.style.opacity = 0.95;
+    svg.addClass(this.group.wrapper, 'dragging');
   }
 
   /* Reverts the effect of `onDragStart()`.  */
   Block.prototype.onDragEnd = function () {
-    this.group.wrapper.style.opacity = 1;
+    svg.removeClass(this.group.wrapper, 'dragging');
   }
 
   /* Some `Block` constants which determine the visual appearance */

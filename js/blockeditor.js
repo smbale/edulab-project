@@ -1,5 +1,5 @@
-define(['surface', 'mouseTool', 'block', 'blockgroup'],
-function (Surface, MouseTool, Block, BlockGroup) {
+define(['svg', 'surface', 'mouseTool', 'block', 'blockgroup'],
+function (svg, Surface, MouseTool, Block, BlockGroup) {
 
   /* **BlockEditor** represents the block editor.
    * It uses `Surface`, which is zoomable and pannable, to place `Block`s.
@@ -135,8 +135,7 @@ function (Surface, MouseTool, Block, BlockGroup) {
         that.dragState.attachee = null;
         that.dragState.firstMovement = false;
 
-        /* Remove "dragging" class from SVG TODO */
-        that.svg.style.cursor = 'default';
+        svg.removeClass(that.svg, 'dragging');
       }
     });
   };
@@ -152,8 +151,7 @@ function (Surface, MouseTool, Block, BlockGroup) {
         that.dragState.y = e.clientY;
         that.dragState.block = block;
 
-        /* Add "dragging" class to SVG TODO */
-        that.svg.style.cursor = '-webkit-grabbing';
+        svg.addClass(that.svg, 'dragging');
 
         /* Helps discover the first movement after mouse down. */
         that.dragState.firstMovement = true;
