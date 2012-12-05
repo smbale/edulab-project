@@ -12,6 +12,15 @@ function (svg, Block, Connector) {
     this.wrapper.appendChild(this.frame);
 
     svg.addClass(this.wrapper, 'control-block');
+    
+    /* Add icon */
+    if (opts.icon) {
+      this.wrapper.appendChild(svg.create('use', {
+        'x': 6,
+        'y': 4,
+        'xlink:href': '#' + opts.icon
+      }));
+    }
 
     /* Init connectors */
     this.connectorPositions = [];
@@ -100,7 +109,7 @@ function (svg, Block, Connector) {
 
   ControlBlock.END_SEGMENT_HEIGHT = 15;
   ControlBlock.SEGMENT_MIN_HEIGHT = 30;
-  ControlBlock.CONTROL_MIN_HEIGHT = 50;
+  ControlBlock.CONTROL_MIN_HEIGHT = 60;
   ControlBlock.SEGMENT_WIDTH = 30;
   ControlBlock.SEGMENT_TOTAL_WIDTH = 
     ControlBlock.SEGMENT_WIDTH + Block.CONNECTOR_TOTAL_WIDTH;

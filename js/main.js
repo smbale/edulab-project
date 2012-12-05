@@ -1,5 +1,9 @@
-require(['blockeditor'],
-function (BlockEditor) {
+require([
+    'blockeditor',
+    'block',
+    'startblock',
+    'controlblock'],
+function (BlockEditor, Block, StartBlock, ControlBlock) {
   robotApplet = new window.jsdares.robot.ProgramApplet($('.robot-applet'), {
     readOnly: true,
     blockSize: 64,
@@ -11,5 +15,22 @@ function (BlockEditor) {
     r.drive(3);
   });
   var editor = new BlockEditor();
+
+  startBlock = editor.createBlock(StartBlock, {
+    onrun: function () {
+      if (console) console.log("RUN");
+    },
+  });
+  editor.createBlockGroup(40, 20, [startBlock]);
+
+  b1 = editor.createBlock(Block, {icon: 'move-icon'});
+  editor.createBlockGroup(180, 60, [b1]);
+
+  b2 = editor.createBlock(Block, {icon: 'move-icon'});
+  editor.createBlockGroup(200, 160, [b2]);
+
+  b3 = editor.createBlock(ControlBlock, {icon: 'loop-icon', cnt: 1});
+  editor.createBlockGroup(70, 200, [b3]);
+
   $('.blocks-editor').append(editor.svg);
 });

@@ -14,24 +14,12 @@ define(['svg', 'connector'], function (svg, Connector) {
     /* Create frame and append them to `this.wrapper` */
     this.frame = Block.frame.cloneNode();
     this.wrapper.appendChild(this.frame);
-
-    /* Add text */
-    if (opts.text) {
-      var text = svg.create('text', {
-        'x': 10,
-        'y': 43,
-        'font-family': 'sans-serif',
-        'font-size': 40,
-        'filter': 'url(#simple-shadow)',
-        'fill': 'white'
-      });
-      text.textContent = opts.text;
-      this.wrapper.appendChild(text);
-    } else {
+    if (opts.icon) {
       this.wrapper.appendChild(svg.create('use', {
         'x': 6,
         'y': 7,
-        'xlink:href': '#loop-icon'}));
+        'xlink:href': '#' + opts.icon
+      }));
     }
 
     this.connectors.push(new Connector(this, 0));

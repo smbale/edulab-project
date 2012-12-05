@@ -2,16 +2,10 @@ define([
     'svg',
     'surface',
     'mouseTool',
-    'block',
-    'startblock',
-    'controlblock',
     'blockgroup'],
 function (svg,
           Surface,
           MouseTool,
-          Block,
-          StartBlock,
-          ControlBlock,
           BlockGroup) {
 
   /* **BlockEditor** represents the block editor.
@@ -32,40 +26,6 @@ function (svg,
 
     /* List of global block groups */
     this.globalGroups = [];
-
-    /* Just for testing: create a few blocks. */
-    var createChain = function (blist) {
-      for (var i = 1; i < blist.length; i++) {
-        blist[i-1].append(blist[i]);
-      }
-    };
-
-    startBlock = new StartBlock({
-      onrun: function () {
-        if (console) console.log("RUN");
-    }});
-    this.enableDragging(startBlock);
-    startbg = this.createBlockGroup(30, 40);
-    startbg.append(startBlock);
-
-    b1 = this.createBlock('J');
-    b2 = this.createBlock('O');
-    b3 = this.createBlock('E');
-    createChain([b1, b2, b3]);
-    bg1 = this.createBlockGroup(50, 140),
-    bg1.appendChain(b1);
-
-    b4 = this.createBlock('C');
-    b5 = new ControlBlock();
-    this.enableDragging(b5);
-    b6 = this.createBlock('M');
-    b7 = this.createBlock('E');
-    b8 = this.createBlock('L');
-    b9 = this.createBlock();
-    createChain([b4, b5, b6, b7, b8, b9]);
-    bg2 = this.createBlockGroup(200, 50),
-    bg2.appendChain(b4);
-
 
     /* Enable dragging of `Block`s. */
     this.dragState = {
@@ -188,22 +148,35 @@ function (svg,
     });
   };
 
-  /* Creates new `Block`. */
-  BlockEditor.prototype.createBlock = function (text) {
-    var b = new Block({text: text});
+  /* Creates new block. */
+  BlockEditor.prototype.createBlock = function (Constructor, opts) {
+    var b = new Constructor(opts);
     this.enableDragging(b);
     return b;
   };
 
-   /* Creates a new global `BlockGroup` on position x, y.
-    * The group is added to global groups.
-    */
-  BlockEditor.prototype.createBlockGroup = function (x, y) {
+  /* Creates a new global `BlockGroup` on position x, y.
+   * If array `blocks` is provided, it creates a chain of blocks
+   * and appends it into the group.
+   * The group is added to global groups.
+   */
+  BlockEditor.prototype.createBlockGroup = function (x, y, blocks) {
     var bg = new BlockGroup();
     this.surface.canvas.appendChild(bg.wrapper);
     bg.translateBy(x, y);
     this.globalGroups.push(bg);
+    if (blocks) {
+      this.createChain(blocks);
+      bg.appendChain(blocks[0]);
+    }
     return bg;
+  };
+
+  /* Chains blocks in `blist`. */
+  BlockEditor.prototype.createChain = function (blist) {
+      for (var i = 1; i < blist.length; i++) {
+        blist[i-1].append(blist[i]);
+      }
   };
 
   /* Removes `blockGroup` from global block groups. */
