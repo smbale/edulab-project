@@ -1,5 +1,18 @@
-define(['svg', 'surface', 'mouseTool', 'block', 'startblock', 'blockgroup'],
-function (svg, Surface, MouseTool, Block, StartBlock, BlockGroup) {
+define([
+    'svg',
+    'surface',
+    'mouseTool',
+    'block',
+    'startblock',
+    'controlblock',
+    'blockgroup'],
+function (svg,
+          Surface,
+          MouseTool,
+          Block,
+          StartBlock,
+          ControlBlock,
+          BlockGroup) {
 
   /* **BlockEditor** represents the block editor.
    * It uses `Surface`, which is zoomable and pannable, to place `Block`s.
@@ -43,7 +56,8 @@ function (svg, Surface, MouseTool, Block, StartBlock, BlockGroup) {
     bg1.appendChain(b1);
 
     b4 = this.createBlock('C');
-    b5 = this.createBlock('A');
+    b5 = new ControlBlock();
+    this.enableDragging(b5);
     b6 = this.createBlock('M');
     b7 = this.createBlock('E');
     b8 = this.createBlock('L');
@@ -93,15 +107,15 @@ function (svg, Surface, MouseTool, Block, StartBlock, BlockGroup) {
               dragState.attachee = attachee;
             }
             t = null;
-          }, 20);
+          }, 40);
         };
 
         /* Detach the chain from the current group. */
         if (!block.isFirst()) {
           /* Create a new block group which will keep the blocks */
           var x = block.group._x,
-              blockSize = block.size(),
-              y = block.group._y + block.prev._y + blockSize.height,
+              prevHeight = block.prev.size().height,
+              y = block.group._y + block.prev._y + prevHeight,
               bg = that.createBlockGroup(x, y);
           bg.appendChain(block);
         }

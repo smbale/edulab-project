@@ -42,6 +42,7 @@ define(['svg', 'connector'], function (svg, Connector) {
     this.wrapper.appendChild(cpath);
   };
 
+  /* Creates essential block members */
   Block.prototype.initMembers = function () {
     this.wrapper = svg.create('g', {'class': 'block'});
 
@@ -295,9 +296,7 @@ define(['svg', 'connector'], function (svg, Connector) {
     this.connectorPaths[0].style.display = 'none';
   }
 
-  /* Changes style of the block to show that an attachable
-   * block is hovering over this one.
-   */
+  /* Called when a new block is connected. */
   Block.prototype.onConnect = function (index) {
     // pass
   }
@@ -341,11 +340,13 @@ define(['svg', 'connector'], function (svg, Connector) {
     });
     var segs = path.pathSegList;
 
-    var relLineTo = function (x, y) {
+    var relLineTo = Block.relLineTo = function (x, y) {
       return path.createSVGPathSegLinetoRel(x, y);
     };
 
-    var relArcTo = function (x, y) {
+    var relArcTo = Block.relArcTo = function (x, y, cw) {
+      /* Clock-wise */
+      cw = cw === 1 ? 1 : 0;
       return path.createSVGPathSegArcRel(
           x,
           y,
@@ -353,7 +354,7 @@ define(['svg', 'connector'], function (svg, Connector) {
           Block.CORNER_RADIUS,
           90,
           0,
-          0);
+          cw);
     };
 
     /* Starting point */
