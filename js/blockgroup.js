@@ -63,6 +63,19 @@ define(['svg'], function (svg) {
     }
   };
 
+  /* Prepends the whole chain. */
+  BlockGroup.prototype.prependChain = function (block) {
+    var oldFirst = this.first;
+    if (oldFirst !== null) {
+      this.first.removeChain();
+    }
+    this.appendChain(block);
+
+    if (oldFirst !== null) {
+      this.first.lastInChain().appendChain(oldFirst);
+    }
+  };
+
   /* Translates `wrapper` by `x`, `y`. */
   BlockGroup.prototype.translateBy = function (x, y) {
     this.translate(this._x + x, this._y + y);
@@ -101,6 +114,10 @@ define(['svg'], function (svg) {
     } else {
       return {x: this._x, y: this._y};
     }
+  };
+
+  BlockGroup.prototype.hasParent = function () {
+    return this.parentBlock !== null;
   };
 
   /* Returns the size of the group {width, height} */

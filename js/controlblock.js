@@ -1,5 +1,5 @@
-define(['svg', 'block', 'connector'],
-function (svg, Block, Connector) {
+define(['svg', 'block', 'blockgroup', 'connector'],
+function (svg, Block, BlockGroup, Connector) {
 
   /* Control block (if-else, loop) */
   var ControlBlock = function (opts) {
@@ -24,6 +24,16 @@ function (svg, Block, Connector) {
 
     /* Init connectors */
     this.connectorPositions = [];
+    this.connectorGroups = [];
+    for (var i = 1; i <= this.cnt; i++) {
+      if (i > 0) {
+        var bg = new BlockGroup();
+        bg.parentBlock = this;
+        this.connectorGroups.push(bg);
+        this.wrapper.appendChild(bg.wrapper);
+      }
+    }
+
     for (var i = 0; i <= this.cnt; i++) {
       this.connectors.push(new Connector(this, i));
       var cpath = Block.connector.cloneNode();
@@ -31,25 +41,48 @@ function (svg, Block, Connector) {
       this.connectorPositions.push({x: 0, y: 0});
       cpath.style.display = 'none';
       this.wrapper.appendChild(cpath);
+      /* TODO: add `createChildBlockGroup` to `Block` */
     }
 
     this.updateSize = function () {
+      /* Update other connectors */
+      var h = 0;
+      for (var i = 1; i <= this.cnt; i++ ) {
+        h += ControlBlock.CONTROL_MIN_HEIGHT;
+        /* TODO: hard-coded 15 */
+        svg.setTranslate(this.connectorPaths[i], 15, h);
+        this.connectorPositions[i].x = 15;
+        this.connectorPositions[i].y = h;
+        this.connectorGroups[i - 1].translate(15, h);
+        var gheight = this.connectorGroups[i - 1].size().height;
+        gheight -= Block.CONNECTOR_HEIGHT;
+        this.setSegmentHeight(i, gheight);
+        if (ControlBlock.SEGMENT_MIN_HEIGHT < gheight) {
+          h += gheight;
+        } else {
+          h += ControlBlock.SEGMENT_MIN_HEIGHT;
+        }
+      }
+
+      var segs = this.frame.pathSegList;
+      segs.replaceItem(Block.relLineTo(0, h + ControlBlock.END_SEGMENT_HEIGHT -
+                                          2 * Block.CORNER_RADIUS),
+                       ControlBlock.HEIGHT_IND);
+
       /* Update main connector */
       var size = this.size();
       svg.setTranslate(this.connectorPaths[0], 0, size.height);
       this.connectorPositions[0].y = size.height;
+    };
 
-      /* Update other connectors */
-      var h = 0,
-          w = size.width - ControlBlock.SEGMENT_TOTAL_WIDTH -
-              Block.CONNECTOR_MARGIN / 2;
-      for (var i = 1; i <= this.cnt; i++ ) {
-        h += ControlBlock.CONTROL_MIN_HEIGHT;
-        svg.setTranslate(this.connectorPaths[i], w, h);
-        this.connectorPositions[i].x = w;
-        this.connectorPositions[i].y = h;
-        h += ControlBlock.SEGMENT_MIN_HEIGHT;
+    this.setSegmentHeight = function (i, height) {
+      // TODO: properly implement
+      var segs = this.frame.pathSegList;
+      if (height < ControlBlock.SEGMENT_MIN_HEIGHT) {
+        height = ControlBlock.SEGMENT_MIN_HEIGHT;
       }
+      segs.replaceItem(Block.relLineTo(0, -height + 2*Block.CORNER_RADIUS),
+                       ControlBlock.RIGHT_HIGHT_IND);
     };
 
     /* Returns size of the block {width, height} */
@@ -92,6 +125,14 @@ function (svg, Block, Connector) {
       }
     };
 
+    this.connect = function (block, index) {
+      if (index === 0) {
+        Block.prototype.connect.call(this, block, index);
+      } else {
+        this.connectorGroups[index - 1].prependChain(block);
+      }
+    };
+
     /* TODO: move this to Block */
     this.onHoverStart = function (block, index) {
       this.connectorPaths[index].style.display = 'block';
@@ -100,6 +141,16 @@ function (svg, Block, Connector) {
     this.onHoverEnd = function (block, index) {
       this.connectorPaths[index].style.display = 'none';
     }
+
+    this.attachable = function (block) {
+      var groups = this.connectorGroups,
+          connector = null;
+      for (var i = 0, length = groups.length; i < length; i++) {
+        connector = groups[i].attachable(block);
+        if (connector) return connector;
+      }
+      return Block.prototype.attachable.call(this, block);
+    };
 
   };
 
@@ -133,6 +184,7 @@ function (svg, Block, Connector) {
                         ControlBlock.CONTROL_MIN_HEIGHT) -
                  2 * Block.CORNER_RADIUS;
     segs.insertItemBefore(relLineTo(0, height), Block.SEG_IND_HEIGHT);
+    ControlBlock.HEIGHT_IND = Block.SEG_IND_HEIGHT;
 
     /* Add height item at the end */
     segs.appendItem(relLineTo(0, -ControlBlock.END_SEGMENT_HEIGHT +
@@ -159,6 +211,8 @@ function (svg, Block, Connector) {
       segs.appendItem(relArcTo(-Block.CORNER_RADIUS, -Block.CORNER_RADIUS, 1));
 
       /* Segment height */
+      /* TODO: different inds */
+      ControlBlock.RIGHT_HIGHT_IND = segs.numberOfItems;
       segs.appendItem(relLineTo(0, -ControlBlock.SEGMENT_MIN_HEIGHT +
                                    2 * Block.CORNER_RADIUS));
 

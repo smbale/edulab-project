@@ -71,17 +71,16 @@ function (svg,
         };
 
         /* Detach the chain from the current group. */
-        if (!block.isFirst()) {
+        if (!block.isFirst() || block.group.hasParent()) {
           /* Create a new block group which will keep the blocks */
-          var x = block.group._x,
-              prevHeight = block.prev.size().height,
-              y = block.group._y + block.prev._y + prevHeight,
-              bg = that.createBlockGroup(x, y);
+          var pos = block.globalPosition(),
+              oldgroup = block.group,
+              bg = that.createBlockGroup(pos.x, pos.y);
           bg.appendChain(block);
+          oldgroup.update();
         }
         
         if (that.dragState.firstMovement) {
-
           block.onDragStart();
           that.dragState.firstMovement = false;
         }
@@ -138,14 +137,21 @@ function (svg,
         that.dragState.firstMovement = true;
 
         /* If block.group is global, move it to the foreground */
-        var canvas = that.surface.canvas;
-        if (canvas.hasChildNodes(block.group.wrapper)) {
-          canvas.appendChild(block.group.wrapper);
+        if (that.isGroupGlobal(block.group)) {
+          that.surface.canvas.appendChild(block.group.wrapper);
         }
 
         return false;
       }
     });
+  };
+
+  BlockEditor.prototype.isGroupGlobal = function (blockGroup) {
+    var i = this.globalGroups.length;
+    while (i--) {
+      if (this.globalGroups[i] === blockGroup) return true;
+    }
+    return false;
   };
 
   /* Creates new block. */

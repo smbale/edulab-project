@@ -32,21 +32,21 @@ path.connector {
   fill: none;
 }
 
-g.block path.frame {
+g.block > path.frame {
 /*  filter: url(#inner-shadow); */
   stroke: rgba(0, 0, 0, 0.3);
   stroke-width: 1px;
 }
 
-g.statement-block path.frame {
+g.statement-block > path.frame {
   fill: hsl(197, 72%, 52%);
 }
 
-g.start-block path.frame {
+g.start-block > path.frame {
   fill: hsl(62, 85%, 58%);
 }
 
-g.control-block path.frame {
+g.control-block > path.frame {
   fill: hsl(82, 72%, 52%);
 }
 
