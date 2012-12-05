@@ -7,7 +7,7 @@ define(['svg', 'connector'], function (svg, Connector) {
   var Block = function (opts) {
     opts = opts || {};
 
-    this.initMembers();
+    this.initMembers(opts);
 
     svg.addClass(this.wrapper, "statement-block");
 
@@ -31,7 +31,7 @@ define(['svg', 'connector'], function (svg, Connector) {
   };
 
   /* Creates essential block members */
-  Block.prototype.initMembers = function () {
+  Block.prototype.initMembers = function (opts) {
     this.wrapper = svg.create('g', {'class': 'block'});
 
     /* Position of the block */
@@ -50,6 +50,8 @@ define(['svg', 'connector'], function (svg, Connector) {
     /* Connectors */
     this.connectors = [];
     this.connectorPaths = [];
+
+    this.data = opts.data || {};
   };
 
   /* Check if the block belongs to some group. */

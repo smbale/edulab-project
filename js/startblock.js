@@ -7,7 +7,7 @@ function (svg, Block, Connector) {
     var onrun = opts.onrun || function () {};
 
     /* Call `Block`'s init method */
-    this.initMembers();
+    this.initMembers(opts);
     this.frame = StartBlock.frame.cloneNode();
     this.wrapper.appendChild(this.frame);
 
@@ -19,6 +19,7 @@ function (svg, Block, Connector) {
     var icon = svg.create('use', {
       'x': 34,
       'y': 7,
+      'class': 'svg-button',
       'xlink:href': '#play-icon'});
     this.wrapper.appendChild(icon);
     $(icon).click(onrun)

@@ -7,7 +7,7 @@ function (svg, Block, BlockGroup, Connector) {
     this.cnt = opts.cnt || 1;
 
     /* Call `Block`'s init method */
-    this.initMembers();
+    this.initMembers(opts);
     this.frame = ControlBlock.createFrame(this.cnt);
     this.wrapper.appendChild(this.frame);
 

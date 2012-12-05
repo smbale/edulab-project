@@ -52,6 +52,12 @@ g.control-block > path.frame {
 
 path#play-icon {
   fill: green;
+}
+
+.svg-button {
   cursor: pointer;
 }
 
+.svg-button:hover {
+  opacity: 0.8;
+}
