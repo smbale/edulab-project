@@ -14,12 +14,10 @@ function (svg, Block, BlockGroup, Connector) {
     svg.addClass(this.wrapper, 'control-block');
     
     /* Add icon */
-    if (opts.icon) {
-      this.wrapper.appendChild(svg.create('use', {
-        'x': 6,
-        'y': 4,
-        'xlink:href': '#' + opts.icon
-      }));
+    if (opts.elem) {
+      var g = svg.create('g');
+      this.wrapper.appendChild(g);
+      g.appendChild(opts.elem);
     }
 
     /* Init connectors */

@@ -15,7 +15,7 @@
   <div class="wrapper">
     <div class="robot-applet"></div>
     <div class="blocks-editor">
-      <div class="dialog control-block">
+      <div class="dialog" style="display: none;">
         <div class="dialog-wrapper">
         </div>
       </div>
@@ -72,7 +72,7 @@
       fill="white"
       filter="url(#simple-shadow)"></path>
 
-    <path id="top-icon"
+    <path id="up-icon"
       transform = "scale(1.4,1.4)"
       d="M9.814,21.871 16.001,15.684 22.188,21.871
          25.725,18.335 16.001,8.612 6.276,18.335z"
@@ -88,28 +88,31 @@
     <g id="drive-right-icon">
       <use xlink:href="#drive-icon"></use>
       <use xlink:href="#right-icon" 
-           transform="translate(32,0) scale(0.6, 0.6)"></use>
+           transform="translate(28,0) scale(0.6, 0.6)"></use>
     </g>
 
     <g id="drive-left-icon">
       <use xlink:href="#drive-icon"></use>
       <use xlink:href="#left-icon" 
-           transform="translate(32,0) scale(0.6, 0.6)"></use>
+           transform="translate(28,0) scale(0.6, 0.6)"></use>
     </g>
 
-    <g id="drive-top-icon">
+    <g id="drive-up-icon">
       <use xlink:href="#drive-icon"></use>
-      <use xlink:href="#top-icon" 
-           transform="translate(32,0) scale(0.6, 0.6)"></use>
+      <use xlink:href="#up-icon" 
+           transform="translate(28,0) scale(0.6, 0.6)"></use>
     </g>
 
     <g id="drive-down-icon">
       <use xlink:href="#drive-icon"></use>
       <use xlink:href="#down-icon" 
-           transform="translate(32,0) scale(0.6, 0.6)"></use>
+           transform="translate(28,0) scale(0.6, 0.6)"></use>
     </g>
 
     <path  id="turn-left-icon" filter="url(#simple-shadow)" transform="scale(1.4, 1.4)" fill="white"
+      d="m 14.981,8.020018 0,-3.203018 -12.106,6.99 12.106,6.99 0,-4.063498 c 3.285,-0.002 5.789936,-0.897095 6.062152,1.301677 0.242468,1.958478 0.03792,9.443804 0.03792,9.443804 l 5.708276,0 c 0,0 0,-0.982807 0,-9.146866 0,-9.3445738 -6.837344,-8.554099 -11.808348,-8.312099 z"/>
+    
+    <path  id="turn-right-icon" filter="url(#simple-shadow)" transform="scale(-1.4, 1.4) translate(-32, 0)" fill="white"
       d="m 14.981,8.020018 0,-3.203018 -12.106,6.99 12.106,6.99 0,-4.063498 c 3.285,-0.002 5.789936,-0.897095 6.062152,1.301677 0.242468,1.958478 0.03792,9.443804 0.03792,9.443804 l 5.708276,0 c 0,0 0,-0.982807 0,-9.146866 0,-9.3445738 -6.837344,-8.554099 -11.808348,-8.312099 z"/>
     
     <path  id="ok-icon" filter="url(#simple-shadow)" transform="scale(2, 2)" fill="white"

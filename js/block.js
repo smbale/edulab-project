@@ -6,10 +6,11 @@ define(['svg', 'connector'], function (svg, Connector) {
    */
   var Block = function (opts) {
     opts = opts || {};
+    var cls = opts.cls || 'statement-block';
 
     this.initMembers(opts);
 
-    svg.addClass(this.wrapper, "statement-block");
+    svg.addClass(this.wrapper, cls);
 
     /* Create frame and append them to `this.wrapper` */
     this.frame = Block.frame.cloneNode();
@@ -20,6 +21,10 @@ define(['svg', 'connector'], function (svg, Connector) {
         'y': 7,
         'xlink:href': '#' + opts.icon
       }));
+    } else if (opts.elem) {
+      var g = svg.create('g');
+      g.appendChild(opts.elem);
+      this.wrapper.appendChild(g);
     }
 
     this.connectors.push(new Connector(this, 0));
