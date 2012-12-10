@@ -4,17 +4,59 @@ body {
 
 div.wrapper {
   width: 100%;
+  min-width: 1024px;
   background: hsl(80, 37%, 97%);
 }
 
 div.blocks-editor {
   margin-right: 512px;
   height: 512px;
+  position: relative;
 }
 
 div.robot-applet {
   float: right;
   width: 512px;
+}
+/* Dialog */
+div.blocks-editor > div.dialog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+/* display: none; */
+}
+
+div.dialog-wrapper {
+  display: block;
+  padding: 15px;
+  margin: 0 auto;
+  width: 450px;
+}
+
+div.blocks-editor > div.dialog.control-block {
+  background: hsl(82, 65%, 50%);
+}
+
+div.blocks-editor > div.dialog.statement-block {
+  background: hsl(197, 60%, 50%);
+}
+
+div.dialog text {
+  font: bold 120px Verdana, Helvetica, Arial, sans-serif;
+  fill: hsl(9, 77%, 54%);
+  filter: url(#simple-shadow);
+}
+
+circle.num-selector {
+  fill: hsl(9, 77%, 54%);
+  filter: url(#simple-shadow);
+  opacity: 0.35;
+  cursor: pointer;
+}
+circle.num-selector.selected {
+  opacity: 1;
 }
 
 /* Blocks' styles */
@@ -39,15 +81,15 @@ g.block > path.frame {
 }
 
 g.statement-block > path.frame {
-  fill: hsl(197, 72%, 52%);
+  fill: hsl(197, 60%, 50%);
 }
 
 g.start-block > path.frame {
-  fill: hsl(62, 85%, 58%);
+  fill: hsl(62, 85%, 50%);
 }
 
 g.control-block > path.frame {
-  fill: hsl(82, 72%, 52%);
+  fill: hsl(82, 65%, 50%);
 }
 
 path#play-icon {
